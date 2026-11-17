@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f3eb">
+<title>歴史総合｜正誤トレーニング</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f5f3eb; --card: #fffefa; --ink: #142c2b; --muted: #526563;
+  --teal: #126456; --mint: #e1efe8; --red: #a03c35; --rose: #f6e6e1; --line: #d7dfd5;
+  font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); }
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 3px solid #196f95; outline-offset: 3px; }
+button:disabled { cursor: default; }
+.shell { min-height: 100svh; max-width: 34rem; margin: auto; padding: max(1.2rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+header { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+.brand-mark { display: grid; place-content: center; width: 2.6rem; height: 2.6rem; border-radius: .82rem; background: var(--teal); color: white; font-size: 1.05rem; font-weight: 800; flex: none; }
+h1 { margin: 0; font-size: clamp(1.1rem, 4.8vw, 1.45rem); letter-spacing: -.03em; }
+.subtitle, .mode-note, .hint { margin: .25rem 0 0; font-size: .77rem; line-height: 1.55; color: var(--muted); }
+.mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; background: #e8eae2; border: 1px solid var(--line); border-radius: .9rem; padding: .22rem; }
+.mode-picker button { border: 1px solid transparent; border-radius: .67rem; min-height: 2.7rem; padding: .35rem; background: transparent; font-size: .9rem; font-weight: 700; }
+.mode-picker button[aria-pressed="true"] { background: var(--card); border-color: var(--line); color: var(--teal); box-shadow: 0 1px 2px #193b2312; }
+.mode-note { min-height: 2.1rem; padding-top: .26rem; }
+.progress-row { display: flex; justify-content: space-between; gap: .35rem; margin: .35rem 0; color: var(--muted); font-size: .78rem; font-weight: 700; }
+.progress-row strong { color: var(--ink); }
+progress { display: block; width: 100%; height: .38rem; appearance: none; border: 0; border-radius: 999px; background: #dfe5dc; overflow: hidden; }
+progress::-webkit-progress-bar { background: #dfe5dc; }
+progress::-webkit-progress-value { background: var(--teal); border-radius: 999px; }
+progress::-moz-progress-bar { background: var(--teal); border-radius: 999px; }
+.stage { position: relative; margin: .85rem 0 .8rem; overflow: clip; border-radius: 1.18rem; }
+.stage::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg,var(--rose) 0 49%,var(--mint) 51% 100%); border-radius: inherit; }
+.card { position: relative; display: flex; flex-direction: column; min-height: clamp(12rem, 34svh, 18rem); padding: 1.12rem; border: 1px solid var(--line); border-radius: inherit; background: var(--card); touch-action: pan-y; user-select: none; transition: transform 150ms ease-out, border-color 120ms; }
+.card.dragging { transition: none; }
+.card[data-direction="right"] { border-color: var(--teal); }
+.card[data-direction="left"] { border-color: var(--red); }
+.card-meta { display: flex; justify-content: space-between; gap: .5rem; align-items: center; min-height: 1.4rem; margin-bottom: .68rem; }
+.chapter { color: var(--teal); background: var(--mint); border-radius: .35rem; padding: .2rem .44rem; font-size: .75rem; font-weight: 700; }
+.origin { color: var(--muted); font-size: .73rem; }
+.question { margin: auto 0; padding: .3rem 0 .65rem; font-size: clamp(1.1rem, 4.85vw, 1.42rem); line-height: 1.7; font-weight: 700; overflow-wrap: anywhere; }
+.swipe-label { position: absolute; bottom: .6rem; right: .75rem; font-weight: 800; font-size: .85rem; color: var(--teal); }
+.card[data-direction="left"] .swipe-label { color: var(--red); }
+.card.answered { min-height: 0; touch-action: auto; user-select: text; }
+.card.answered .question { font-size: 1.03rem; padding-bottom: .1rem; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.action { min-height: 3.2rem; padding: .55rem .4rem; border: 1px solid transparent; border-radius: .8rem; font-weight: 800; }
+.action small { margin-inline: .18rem; font-size: .78rem; }
+.false { background: var(--rose); color: var(--red); border-color: #ead3cc; }
+.true { background: var(--mint); color: var(--teal); border-color: #cbded4; }
+.hint { text-align: center; margin: .55rem 0 0; }
+.feedback, .summary { border: 1px solid var(--line); padding: .9rem 1rem; border-radius: .94rem; background: var(--card); }
+.feedback { border-left: .28rem solid var(--teal); }
+.feedback[data-correct="false"] { border-left-color: var(--red); }
+.feedback h2, .summary h2 { margin: 0 0 .35rem; font-size: 1.05rem; }
+.feedback[data-correct="false"] h2 { color: var(--red); }
+.feedback[data-correct="true"] h2 { color: var(--teal); }
+.feedback p, .summary p { margin: 0; font-size: .91rem; line-height: 1.6; }
+.feedback .explanation { margin-top: .42rem; }
+.primary { background: var(--teal); color: white; width: 100%; border: 0; min-height: 3rem; border-radius: .75rem; font-weight: 800; margin-top: .65rem; }
+.status-note { margin: .7rem 0 0; color: var(--muted); font-size: .75rem; }
+@media (max-height: 650px) { .shell { padding-top: .75rem; } header { margin-bottom: .7rem; } .card { min-height: 10rem; } .card.answered { min-height: 0; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <span class="brand-mark" aria-hidden="true">歴</span>
+    <div><h1>歴史総合の正誤</h1><p class="subtitle">第24〜31章 · 全199問</p></div>
+  </header>
+  <div class="mode-picker" role="group" aria-label="出題モード">
+    <button id="random-mode" type="button" aria-pressed="true">ランダム</button>
+    <button id="review-mode" type="button" aria-pressed="false">間違い優先</button>
+  </div>
+  <p id="mode-note" class="mode-note"></p>
+  <div class="progress-row"><strong id="position"></strong><span id="score"></span></div>
+  <progress id="progress" value="0" max="20" aria-label="今回の回答数"></progress>
+
+  <div class="stage" id="stage">
+    <article class="card" id="card" aria-labelledby="question">
+      <div class="card-meta"><span class="chapter" id="chapter"></span><span class="origin" id="origin"></span></div>
+      <p class="question" id="question" tabindex="-1"></p>
+      <span id="swipe-label" class="swipe-label" aria-hidden="true"></span>
+    </article>
+  </div>
+  <div id="answer-controls">
+    <div class="actions">
+      <button type="button" class="action false" id="answer-false" aria-label="× 誤り">← <small>× 誤り</small></button>
+      <button type="button" class="action true" id="answer-true" aria-label="○ 正しい"><small>○ 正しい</small> →</button>
+    </div>
+    <p class="hint">カードをスワイプするか、ボタンをタップ</p>
+  </div>
+
+  <section id="result" hidden>
+    <div class="feedback" id="feedback">
+      <h2 id="result-title" tabindex="-1"></h2>
+      <p id="result-answer"></p>
+      <p class="explanation" id="explanation"></p>
+    </div>
+    <button type="button" class="primary" id="next">次の問題</button>
+  </section>
+  <section id="summary" class="summary" hidden>
+    <h2 id="summary-title" tabindex="-1">今回の結果</h2>
+    <p id="summary-text"></p>
+    <button type="button" class="primary" id="restart">もう一度</button>
+  </section>
+  <p id="storage-note" class="status-note" hidden>このブラウザーでは履歴を保存できません。ページを開いている間は復習できます。</p>
+  <noscript>このアプリを使うにはブラウザーでJavaScriptを有効にしてください。</noscript>
+</main>
+<script id="question-bank" type="application/json">
+[["1-1",24,"西部戦線では進軍の膠着と塹壕戦の長期化が重なった。",true,"両陣営が防御陣地にこもり、前線の突破が難しくなった。"],
+["1-2",25,"イリイチのランプの呼称は、ゴエルロ計画をソ連成立の年にちなんで記念したものだった。",false,"イリイチはレーニンの名前に由来する。"],
+["1-3",28,"第一次国共合作の三大政策のうち、国内の労働者・農民を直接対象としたのは扶助工農である。",true,"連ソはソ連との提携、容共は共産党員の受け入れ。"],
+["1-4",26,"日本の旧委任統治地域にあるパラオの世界遺産には、独特なクラゲが生息する海水湖がある。",true,"ロックアイランド群と南ラグーンのジェリーフィッシュレイク。"],
+["1-5",27,"トルコのローザンヌ条約締結と共和国成立は、スルタン制廃止に先行した。",false,"スルタン制廃止は1922年、条約締結・共和国成立は1923年。"],
+["1-6",25,"市場経済を部分的に認める政策は、ソ連成立後に始まった。",false,"ネップの開始は1921年、ソ連成立は1922年。"],
+["1-7",24,"西部戦線の膠着に関わった連射火器は、航空機にも搭載された。",true,"機関銃が地上だけでなく航空機にも使われた。"],
+["1-8",25,"ゴエルロ計画が掲げた全土規模の電化は、スターリン期の第一次五か年計画で初めて打ち出された。",false,"ゴエルロ計画はレーニン期の電化計画。"],
+["1-9",29,"WASPは、KKKなどの排外主義が主に迫害した移民層を指す。",false,"WASPは白人・アングロサクソン系・プロテスタントを指す。"],
+["1-10",25,"ニコライ2世の国会開設の約束は、日露戦争中の民衆への発砲を発端とする革命に結び付く。",true,"血の日曜日事件をきっかけに1905年革命が広がった。"],
+["1-11",26,"ドイツの国際連盟加盟後、ロカルノ条約で西部国境の現状を確認した。",false,"条約は1925年、加盟は1926年。"],
+["1-12",24,"原資料は、第一次大戦の化学兵器被害を戦場と研究現場の双方で扱っている。",true,"戦場での使用のほか、研究中の事故にも言及している。"],
+["1-13",30,"「2＋2＝5」は、新経済政策よりも統制を強める経済政策を後押しした。",true,"スターリンの五か年計画を4年で達成するという標語。"],
+["1-14",27,"アウンサンとホー＝チ＝ミンは、それぞれタキン党とインドシナ共産党に関わった。",true,"前者はビルマ、後者はベトナムの独立運動。"],
+["1-15",31,"イタリアのファシスト台頭には大戦債務、ドイツのナチ党台頭には講和条約への不満が関わった。",true,"両国の台頭の背景には大戦後の負担や不満があった。"],
+["1-16",25,"二月革命の背景には、戦場化に伴う生活苦と食糧不足・インフレがあった。",true,"大戦の長期化により複数の負担が重なった。"],
+["1-17",28,"日本が朝鮮で文化政治へ転じた後、ソウルから三・一独立運動が広がった。",false,"運動の弾圧後に武断政治から文化政治へ転換した。"],
+["1-18",29,"原資料ではフォードの量産方式により、生産時間が約4分の1、車両価格が約8分の1になった。",false,"資料の比率は生産時間が約8分の1、価格が約4分の1。"],
+["1-19",26,"リメンブランス・デイの日付は、第一次大戦の対独講和条約の調印日と一致する。",false,"11月11日は休戦日で、条約の調印日は6月28日。"],
+["1-20",24,"塹壕足とシェルショックはいずれも、冷湿環境への長時間の曝露を主因とする。",false,"冷湿環境は塹壕足に関わり、シェルショックは砲撃や戦闘のストレスに関わる。"],
+["1-21",24,"地下鉄サリン事件で使われた化学剤は、イベリットの別名である。",false,"サリンとイベリットは別の化学剤。"],
+["1-22",29,"科学的管理法では標準的なノルマを決めた後で、そのノルマを基に最適な動作時間を算出する。",false,"テイラーは作業を分解・計測し、その分析に基づいて標準を設定した。"],
+["1-23",26,"委任統治の対象は、敗戦国ドイツの旧領に限られた。",false,"オスマン帝国の旧領の一部も対象となった。"],
+["1-24",27,"テルアビブのユダヤ人街の建設は、イギリス委任統治が始まった後に始まった。",false,"建設開始は1909年で、委任統治以前。"],
+["1-25",27,"ペルシアからイランへの改称は、オスマン帝国解体後に成立した共和国の政策だった。",false,"レザー＝ハーンのパフレヴィー朝期のこと。"],
+["1-26",27,"三・一独立運動とアジア各地の自立運動には、民族自決の波及という共通点がある。",true,"欧米や日本の支配下で、民族自決が独立を求める運動を後押しした。"],
+["1-27",24,"原資料では、ハーバーは毒ガスの導入で戦争が長引くと考えた人物として描かれる。",false,"資料中のハーバーは早期終戦とドイツ兵の救命につながると考えている。"],
+["1-28",26,"国際連盟に加盟したドイツは、不戦条約に原署名国として加わった。",true,"連盟加盟は1926年、不戦条約は1928年。"],
+["1-29",24,"パン＝ゲルマン主義とパン＝スラブ主義は、バルカンで同じ陣営の進出を支えた。",false,"独墺とロシアの相対立する進出を支えた。"],
+["1-30",31,"T4作戦と「ユダヤ人問題の最終解決」は、ナチスが異なる対象の組織的殺害に用いた呼称である。",true,"前者は障害者、後者はユダヤ人を標的にした。"],
+["1-31",29,"クライスラー・ビルとエンパイア・ステート・ビルは、米国の量産・大量消費社会が発達した時代の都市化を伝える。",true,"両高層建築は1920年代前後の都市文化の事例。"],
+["1-32",26,"西部戦線の世界遺産は、戦闘の痕跡に加えて追悼の実践も伝える。",true,"墓地、記念碑などを通して人々が犠牲を記憶する営みを示す。"],
+["1-33",28,"山東権益の返還に成功した中国は、二十一か条の撤回を求めて調印を拒んだ。",false,"パリではいずれの要求も通らず調印を拒否。山東権益の返還はワシントン会議期。"],
+["1-34",27,"パフレヴィー朝を開いた人物と、サウジアラビア王国を建てた人物は別人である。",true,"前者はレザー＝ハーン、後者はイブン＝サウード。"],
+["1-35",24,"アンモニア合成を工業化した人物が、先にその合成を実証した。",false,"合成の実証はハーバー、工業化はボッシュらによる。"],
+["1-36",29,"大戦期の対欧貸付は、戦災復興を免れた米国の債権国化に結び付いた。",true,"戦費貸付などで米国の対外的な経済の立場が逆転した。"],
+["1-37",26,"ワシントン会議の主催国は、ジュネーヴの国際連盟で当初の常任理事国だった。",false,"米国は国際連盟に不参加。常任理事国は英仏伊日。"],
+["1-38",27,"ローラット法と塩の行進を挟んでも、第二次大戦前までにインドの完全独立は実現しなかった。",true,"政治参加が広がり、完全独立を掲げても、戦前の自治は限定された。"],
+["1-39",29,"女性の政治参加を求めた全国水平社と、部落差別に対抗した新婦人協会は、大正期の社会運動である。",false,"両団体の目的が逆。"],
+["1-40",27,"パレスチナの政治的分裂では、ガザ地区のハマスと西岸のファタハが対置される。",true,"2007年以降の実効支配と自治政府の関係を問う。"],
+["1-41",31,"ナチスの国民共同体は、一体感の宣伝と、特定の人々の排除の両方によって作られた。",true,"ラジオの利用とユダヤ人などの排除を結び付けて理解する。"],
+["1-42",31,"ハーケンクロイツは図柄を、ハイル・ヒトラーは敬礼に伴う挨拶を指す。",true,"前者は党の紋章、後者は挨拶。"],
+["1-43",24,"ボスニア・ヘルツェゴヴィナ併合はセルビアとロシアの結び付きを弱めた。",false,"セルビアの反発を受け、両国の結び付きは強まった。"],
+["1-44",25,"電化には、工業化と中央・地方の結び付きを強める二つの役割が期待された。",true,"電気の普及は生産だけでなく国家統合にも用いられた。"],
+["1-45",30,"高橋是清は、円安による輸出の伸長を図るため金本位制に復帰した。",false,"金輸出を再禁止して金本位制から離脱した。"],
+["1-46",24,"原資料では、第一次大戦の毒ガス被害は死傷者を合わせて約100万人にのぼる。",true,"この概数は死者と負傷者を合わせた数として示される。"],
+["1-47",26,"四カ国条約の参加国は、いずれもワシントン海軍軍縮条約に参加した。",true,"米英仏日は両方に参加。軍縮条約にはさらにイタリアが加わった。"],
+["1-48",30,"世界恐慌の背景には、米国の供給過剰と欧州復興による米国の優位の低下があった。",true,"これに好況期の投機などが重なった。"],
+["1-49",30,"テネシー川流域開発公社が労働者の団結権を整え、ワグナー法が地域の公共事業を担った。",false,"TVAは公共事業、ワグナー法は労働者の権利。"],
+["1-50",27,"共和国成立後のトルコでは、カリフ制廃止とラテン文字採用が進められた。",true,"いずれもケマルの世俗化・近代化改革に含まれる。"],
+["1-51",30,"コルホーズとソフホーズはどちらも農業集団化の時代に見られ、前者が国営、後者が共同経営だった。",false,"前者が共同経営、後者が国営。"],
+["1-52",26,"ルール占領への消極的抵抗を支える貨幣増発は、物価高を深刻化させた。",true,"財政悪化・賠償負担に占領期の増発が重なった。"],
+["1-53",30,"英仏のブロック経済は、域外諸国に対して域内と同等の関税条件を開く政策だった。",false,"自国・植民地などを優先し、域外に高関税を設けた。"],
+["1-54",24,"サラエボ事件の被害者側が宣戦した相手は、暗殺犯の出身系統と結び付けられた国だった。",true,"オーストリア＝ハンガリーがセルビアへ宣戦した。"],
+["1-55",31,"アウシュヴィッツ＝ビルケナウは、約110万人の殺害を伝えるポーランドの世界遺産である。",true,"犠牲者の大半はユダヤ人。"],
+["1-56",30,"農業調整法と全国産業復興法は、同じ政権が異なる部門を対象として制定した。",true,"両方ともローズヴェルトのニューディール政策に含まれる。"],
+["1-57",24,"開戦前の三国同盟にはイタリアが、三国協商にはロシアが含まれた。",true,"戦前の陣営を問う。イタリアの参戦時の陣営とは区別する。"],
+["1-58",28,"党の理念が異なる国民党と共産党は、国内の分裂抑制と列強への対抗で協力した。",true,"第一次国共合作に至る政治的共通項。"],
+["1-59",30,"ソ連の第一次五か年計画は、米国のニューディール政策より先に始まった。",true,"計画は1928年、ニューディールは1933年に始まった。"],
+["1-60",31,"ヒトラーが首相と国家元首を兼ねた後に、ドイツは国際連盟脱退を表明した。",false,"脱退表明は1933年、総統となったのは1934年。"],
+["1-61",29,"ハーディングは、ウィルソンの国際連盟重視を継承して大差で当選した。",false,"「平常への復帰」を掲げ、ウィルソンの国際協調路線と異なった。"],
+["1-62",29,"普通選挙法と民本主義は大正デモクラシーと結び付くが、前者は選挙資格、後者は政治理念の論点である。",true,"普通選挙法と吉野作造の学説を区別する。"],
+["1-63",29,"原資料のアメリカン・ドリームの例は、企業経営者と発明家に限られる。",false,"ディズニーのほか、野球のベーブ＝ルース、飛行家リンドバーグも挙げる。"],
+["1-64",31,"エッフェル塔からの放送は無線通信の実用化より前で、腕木通信と同じ方式だった。",false,"エッフェル塔からの放送は無線を用いた。腕木通信は視覚通信。"],
+["1-65",25,"土地の国有化を掲げた政権が、ブレスト＝リトフスク条約を結んだ。",true,"十月革命後のソビエト政権による。"],
+["1-66",25,"政府中枢が移った都市に、レーニンの遺体を安置する廟が置かれた。",true,"革命後に首都が移ったモスクワの赤の広場にある。"],
+["1-67",29,"フォードの量産は車の価格を下げたが、仕事の性質が変わって離職する労働者もいた。",true,"高賃金・短時間化の一方で職人的作業との違いが生じた。"],
+["1-68",31,"ドイツがポーランドに侵攻した後、英仏の宣戦前に独ソ不可侵条約が結ばれた。",false,"締結は侵攻より前。英仏の宣戦は侵攻後。"],
+["1-69",31,"ツォルフェラインの強制労働とソロヴェツキー諸島の強制労働は、同じ国家体制のもとで行われた。",false,"前者はナチス・ドイツ、後者はソ連。"],
+["1-70",25,"二月革命で生まれた政権が単独講和を進め、その方針にボリシェヴィキが反対した。",false,"臨時政府は戦争を継続し、ボリシェヴィキの政権が講和を進めた。"],
+["1-71",24,"イベリットはマスタード・ガスとも呼ばれ、原資料では皮膚への被害に限っている。",false,"皮膚だけでなく目や呼吸器の被害にも言及する。"],
+["1-72",28,"張作霖爆殺事件が発生した時点では、日本の山東出兵は始まっていなかった。",false,"最初の山東出兵は1927年、爆殺は1928年。"],
+["1-73",27,"エルサレム旧市街の世界遺産登録は、申請国の主権を確定する手続きだった。",false,"申請はヨルダンによるが、世界遺産登録は主権を確定しない。"],
+["1-74",31,"オーストリア併合の後、ズデーテン地方の割譲を英仏が容認した。",true,"両事件は1938年で、オーストリア併合が先。"],
+["1-75",26,"西部戦線の慰霊・記憶の世界遺産は、フランスとドイツの共同登録である。",false,"共同登録国はフランスとベルギー。構成資産は139。"],
+["1-76",31,"国際連盟が経済制裁を加えた相手は、ラインラントに進駐したドイツだった。",false,"制裁の対象はエチオピアへ侵攻したイタリア。"],
+["1-77",27,"パレスチナの委任統治を扱ったサン・レモ会議には、後に国際連盟の常任理事国となった日本が参加した。",true,"日本は日英同盟の関係にあり、サン・レモ会議と国際連盟の双方に関与した。"],
+["1-78",24,"青島の占領と二十一か条の要求の間に、石井＝ランシング協定が結ばれた。",false,"青島占領は1914年、二十一か条の要求は1915年、協定は1917年。"],
+["1-79",29,"フォードの流れ作業と8時間労働は、生産効率と労働条件の双方に関わる。",true,"T型車の量産と並行して高賃金や8時間労働も導入した。"],
+["1-80",31,"全権委任法は、政府立法に必要だった国会と大統領の関与を弱めた。",true,"政府は国会の議決や大統領の署名を経ず法律を制定できた。"],
+["1-81",27,"シオニズムが目指した国家の成立は、サン・レモ会議と同じ年だった。",false,"サン・レモ会議は1920年、イスラエル建国は1948年。"],
+["1-82",31,"アウトバーンは大衆車、フォルクスワーゲンは高速自動車道路を指す。",false,"両者の対応が逆。"],
+["1-83",26,"アルザス＝ロレーヌ返還と1320億金マルクという賠償額は同時に確定した。",false,"返還はヴェルサイユ条約、賠償総額の決定は1921年。"],
+["1-84",27,"パレスチナの一部の国際管理構想と、ユダヤ人の民族的郷土の支持は別の文書に現れる。",true,"前者はサイクス＝ピコ協定、後者はバルフォア宣言。"],
+["1-85",24,"大戦期の日本で造船と鉄鋼が伸びた時期に、対外債権と債務の関係も逆転した。",true,"軍需と貿易の拡大で、日本は債務国から債権国へ転じた。"],
+["1-86",31,"国民ラジオは、政治家の声を全国の家庭に届けることで国民共同体の演出に使われた。",true,"安価な受信機の普及が同じ情報や演説の共有を支えた。"],
+["1-87",30,"ルイセンコ学説を政府が支持したのは、春化処理で獲得した性質の遺伝を否定したためである。",false,"獲得形質の遺伝を主張する学説だった。"],
+["1-88",27,"ワフド党の運動後に独立したエジプトでは、スエズ運河に関するイギリスの影響も消えた。",false,"1922年の独立後も運河周辺でイギリスの影響が続いた。"],
+["1-89",29,"全国水平社の結成は、日本初のラジオ仮放送より早かった。",true,"結成は1922年、芝浦からの仮放送は1925年。"],
+["1-90",25,"米騒動の背景となった米価上昇は、対ソ干渉に向けた日本の動きと無関係だった。",false,"シベリア出兵を見越した買い占めも背景にあった。"],
+["1-91",28,"『新青年』の民主と科学は、辛亥革命後の政治的停滞を背景とする思想運動と結び付く。",true,"『新青年』は1910年代の新文化運動の媒体。"],
+["1-92",31,"「水晶の夜」の後に、ユダヤ人の婚姻や市民権を制限するニュルンベルク法が制定された。",false,"法律は1935年、暴力事件は1938年。"],
+["1-93",26,"ドイツ帝国の成立宣言と第一次大戦の対独講和条約の調印は、同じ宮殿で行われた。",true,"1871年の成立宣言と1919年の調印はいずれもヴェルサイユ宮殿。"],
+["1-94",26,"対独講和条約の調印と西部戦線の休戦は、別の年に行われた。",true,"休戦は1918年、ヴェルサイユ条約調印は1919年。"],
+["1-95",27,"スカルノの国民党とホー＝チ＝ミンの共産党を弾圧した植民地宗主国は同じだった。",false,"インドネシアはオランダ、インドシナはフランス。"],
+["1-96",30,"ソロヴェツキー諸島の遺産は、五か年計画期の強制労働の歴史とも結び付く。",true,"白海の諸島に収容・流刑の施設があった。"],
+["1-97",26,"戦後の独立国承認には、ロシア・オーストリア・オスマンの各帝国の解体が関わった。",true,"旧帝国の版図が再編された。"],
+["1-98",24,"ヴィルヘルム2世が亡命した時点でも、ロシアは連合国側として戦闘を継続していた。",false,"ロシアは1918年3月に離脱し、皇帝の亡命は同年11月。"],
+["1-99",30,"原資料で区別される流刑・収容による被害と大飢饉は、ともに農業集団化期に扱われる。",true,"農民の弾圧、穀物徴発による生活破壊が重なった。"],
+["1-100",29,"女性の社会進出と移民排斥は、戦間期米国の同時期の現象である。",true,"女性参政権や大衆文化と、排日移民法などが同時代に見られた。"],
+["1-101",24,"ハーバーらの成果は、農業の窒素肥料と軍需の両方に結び付いた。",true,"アンモニアの工業生産は肥料と軍需への用途を持った。"],
+["1-102",24,"ハーバーが実証したアンモニア合成では、窒素と水素を加圧し、触媒を用いた。",true,"窒素と水素を高温・高圧で触媒の存在下に反応させた。"],
+["1-103",24,"1917年のドイツの化学戦では、相手の防護装備は戦術上の考慮に入らなかった。",false,"嘔吐性ガスをほかの化学剤と組み合わせ、ガスマスクによる防護を弱める狙いがあった。"],
+["1-104",24,"オストワルト法では、アンモニアから二酸化窒素を経て一酸化窒素を生じ、硝酸を得る。",false,"一酸化窒素が先で、二酸化窒素が後に生じる。ハーバー＝ボッシュ法で得るのはアンモニア。"],
+["2-1",30,"英仏のブロック経済で不利になった国として、ドイツとイタリアが挙げられる。",true,"英仏は自国や植民地との経済圏を優先した。"],
+["2-2",28,"蒋介石が北伐で再統一を目指す一方、日本は山東に三度出兵した。",true,"日本が北伐期の中国に介入した手段の一つ。"],
+["2-3",28,"『新青年』は第一次国共合作後の北伐をきっかけに創刊され、民主と科学を掲げた。",false,"新文化運動の媒体で、第一次国共合作・北伐より早い。"],
+["2-4",25,"血の日曜日事件をきっかけとする改革の約束は、以前から存在した国会の廃止を含んでいた。",false,"ニコライ2世は国会開設などを約束した。"],
+["2-5",31,"ドイツがラインラントに進駐した1936年、イタリアはエチオピアの併合を進めた。",true,"侵攻は前年から始まり、ラインラント進駐とエチオピア併合は同年。"],
+["2-6",30,"欧州の復興で米国の市場での優位が拡大し、米国の供給過多は解消した。",false,"欧州の復興で米国の優位が低下し、供給過多も恐慌の背景となった。"],
+["2-7",25,"コミンテルンの成立とネップの導入は、ともにソ連の結成より早かった。",true,"コミンテルンは1919年、ネップは1921年、ソ連は1922年。"],
+["2-8",28,"五・四運動と三・一独立運動は同年に起き、前者には日本製品の不買も伴った。",true,"どちらも1919年。中国では山東問題に抗議して排日・不買が広がった。"],
+["2-9",24,"ハーバーの研究は、空気中の窒素を肥料生産に役立てる道を開いた。",true,"実証したアンモニア合成をボッシュらが工業化した。"],
+["2-10",24,"原資料は、クララとアインシュタインを、ハーバーの軍事利用に批判的な人物として描いている。",true,"両者の発言の文言は原資料に由来する。"],
+["2-11",29,"ベーブ＝ルースとリンドバーグは、異なる分野から原資料のアメリカン・ドリームの例に挙がる。",true,"前者は野球、後者は航空の分野で知られる。"],
+["2-12",26,"原資料ではルール占領前後のドイツで、貨幣の大量発行にもかかわらず物価が下落したとされる。",false,"物価は急騰し、ハイパーインフレーションとなった。"],
+["2-13",31,"原資料で約110万人の犠牲者が挙げられたアウシュヴィッツ＝ビルケナウは、ドイツ国内の炭鉱遺産である。",false,"ポーランドの収容・絶滅施設。ドイツの炭鉱遺産はツォルフェライン。"],
+["2-14",27,"エジプトでは、ワフド党との独立交渉をイギリスが拒んだことが、ストライキの拡大につながった。",true,"抗議が広がり、1922年の独立に至った。"],
+["2-15",31,"フォルクスワーゲンの構想とアウトバーン建設は、どちらもナチ期の自動車・交通に関係する。",true,"大衆車と高速自動車道路を区別する。"],
+["2-16",27,"サン・レモ会議は、日本が参加したワシントン会議の一部として開かれた。",false,"サン・レモ会議は1920年の別会議で、旧オスマン帝国領の処理を扱った。"],
+["2-17",26,"「記憶の場」が伝える人権侵害は植民地支配を含まず、近代の戦争に限られる。",false,"原資料では紛争に加え、植民地支配などにも言及する。"],
+["2-18",24,"日英同盟は日本の参戦の根拠、石井＝ランシング協定は中国をめぐる日米の利害調整に関わる。",true,"参戦理由と戦時の対米外交を区別する。"],
+["2-19",27,"フセイン＝マクマホン書簡は、アラブ独立をめぐる交渉でなく、英仏の勢力圏を定めた文書だった。",false,"アラブ独立をめぐる書簡。英仏の勢力圏構想はサイクス＝ピコ協定。"],
+["2-20",30,"ソロヴェツキー諸島の収容施設は、ナチ支配下のドイツで外国人を炭鉱労働に従事させた遺産である。",false,"ソロヴェツキーはソ連。ドイツの炭鉱遺産はツォルフェライン。"],
+["2-21",24,"三国協商の三国のうち、開戦前に日英同盟を通じて日本と結び付いていた国は、三国同盟にも属していた。",false,"日英同盟の相手はイギリス。開戦前は三国協商に属し、三国同盟には属さない。"],
+["2-22",26,"ドイツはヴェルサイユ条約により、アルザス＝ロレーヌと海外植民地を失った。",true,"アルザス＝ロレーヌはフランスへ返還。海外植民地も放棄した。"],
+["2-23",24,"パン＝ゲルマン主義を掲げた二国は、戦前の三国同盟にも属していた。",true,"ドイツとオーストリア＝ハンガリーの両国が属した。"],
+["2-24",27,"イブン＝サウードが建国した国家はイランで、アラビア半島の王国はレザー＝ハーンが建てた。",false,"イブン＝サウードはサウジアラビア王国、レザー＝ハーンはイランのパフレヴィー朝。"],
+["2-25",24,"サリンとソマンは、原資料で扱うチクロン系の害虫駆除剤とは別系統に属する。",true,"サリンとソマンは神経剤のG剤に分類される。"],
+["2-26",30,"スターリンは新経済政策で生じた貧富の差を背景に、経済の社会主義化を進めた。",true,"ネップで認められた市場経済の一部を縮小し、五か年計画と農業集団化を進めた。"],
+["2-27",31,"英仏がドイツへ宣戦した時点で、ドイツはチェコの主要部をすでに保護領としていた。",true,"チェコの主要部の保護領化は1939年3月、英仏の宣戦は同年9月。"],
+["2-28",29,"原資料では、T型フォードは車種や車体色の種類を増やすことで大量生産を進めた。",false,"車種を絞り、一時期は色も黒に統一した。"],
+["2-29",27,"テルアビブのホワイト・シティは、イギリス委任統治期の都市発展と結び付く近代建築の遺産である。",true,"シオニズムや建国の年そのものを示す遺産ではなく、町の発展を伝える。"],
+["2-30",29,"8時間労働と高賃金を導入した自動車会社の創業者は、フレデリック＝テイラーである。",false,"創業者はフォード。テイラーは科学的管理法を提唱した。"],
+["2-31",28,"孫文の死後の北伐を進めるために、中国共産党が中国国民党の一部として創設された。",false,"中国共産党は別個の政党として成立し、第一次国共合作を行った。"],
+["2-32",29,"米国は大戦後、欧州への戦費貸付が少なかったため対外債務国となった。",false,"戦費貸付などで債権国となった。"],
+["2-33",29,"1925年の芝浦は、ドイツで作られた国民ラジオの日本向け普及が始まった場所として挙げられる。",false,"日本初のラジオ仮放送が行われた場所。"],
+["2-34",26,"国際連盟では経済制裁が主要な手段で、決議は原則として全会一致だった。",true,"制裁手段と議決方式を区別する。"],
+["2-35",27,"レザー＝ハーンの統治下で、ペルシアの対外呼称はイランとなった。",true,"パフレヴィー朝の時期に改称した。"],
+["2-36",26,"西部戦線の慰霊遺産では、身分を越えて死者の個人名を記す追悼が、死の平等性を伝える。",true,"墓地や記念碑を通じて追悼と和解を伝える。"],
+["2-37",27,"ファタハが自治政府を主導した西岸ではなく、ガザ地区に分離壁が建設されたと教材は説明している。",false,"教材で分離壁を扱うのは西岸。ガザについては封鎖を扱う。"],
+["2-38",31,"ミュンヘン会談で割譲を認められたズデーテン地方は、すでに併合されたオーストリアの一部だった。",false,"ズデーテン地方はチェコスロヴァキアの一部。"],
+["2-39",26,"フランス絶対王政を象徴する宮殿が、ドイツ帝国成立宣言の舞台にもなった。",true,"ヴェルサイユ宮殿では1871年にドイツ帝国成立が宣言された。"],
+["2-40",30,"原資料では約500万～700万人を流刑や収容の対象者、約250万人を大飢饉の餓死者としている。",false,"約250万人は流刑・収容などの対象者、約500万～700万人は餓死者の推計。"],
+["2-41",25,"日本のシベリア出兵は、ロシア内戦への連合国の干渉の一環だった。",true,"日本は約7万人を派遣した。"],
+["2-42",28,"植民地朝鮮の独立運動は、ソウルから各地へ広がった後に日本当局の弾圧を受けた。",true,"運動の全国的波及後、統治方針の転換にもつながった。"],
+["2-43",24,"サラエボ事件より前に、その都市を含む地域はオーストリア＝ハンガリーに併合されていた。",true,"ボスニア・ヘルツェゴヴィナ併合は1908年、事件は1914年。"],
+["2-44",27,"ヨルダンが申請したエルサレム旧市街は、三宗教の聖地を含み、危機遺産にも掲載された。",true,"ユダヤ教・キリスト教・イスラームの聖地がある。"],
+["2-45",30,"ソ連の第一次五か年計画は、世界恐慌で米国と同程度の直接的打撃を受けてから開始された。",false,"計画は1928年に始まり、恐慌の直接の影響は比較的小さかった。"],
+["2-46",29,"排日移民法と禁酒法は、同時代米国でそれぞれ移民の受け入れと酒類を規制した。",true,"同じ法律ではなく、規制対象も異なる。"],
+["2-47",29,"フォードによる量産の普及は、車の価格を上げて富裕層向け消費を強めた。",false,"量産による値下がりが大衆消費を支えた。"],
+["2-48",31,"原資料では、戦後のドイツとイタリアの政党の台頭に加え、恐慌期の日本での軍部台頭も扱う。",true,"日本の事例では軍部、独伊の事例ではナチ党やファシスト党に注目している。"],
+["2-49",26,"原資料は日本と欧州諸国などの死者数の差を、追悼日の認知度の差と結び付けている。",true,"日本の死者を415人と記し、被害規模の差を論点にしている。"],
+["2-50",25,"赤の広場に隣接するクレムリンが政府中枢になる以前も、ロシアの首都はモスクワにあった。",false,"革命前の首都はサンクトペテルブルク。当時の呼称はペトログラード。"],
+["2-51",27,"インドネシアでは共産党の蜂起とスカルノの国民党の活動が、ともに植民地当局の弾圧を受けた。",true,"双方に対する弾圧を行った宗主国はオランダ。"],
+["2-52",25,"ニコライ2世の退位とレーニン派の政権掌握の間には、臨時政府の時期があった。",true,"退位は二月革命、政権掌握は十月革命。"],
+["2-53",25,"大戦が長期化しても、ロシア国内の物価と食糧事情は革命の背景として扱われない。",false,"食糧不足とインフレ・生活苦が革命の背景にあった。"],
+["2-54",27,"戦後アジアの独立運動に影響した民族自決の理念は、ウィルソンの講和原則と関連付けられる。",true,"十四か条と結び付く理念が独立運動に波及した。"],
+["2-55",30,"昭和恐慌下で高橋是清が取った金輸出再禁止は、管理通貨制度への移行につながった。",true,"金本位制からの離脱が制度の転換に結び付いた。"],
+["2-56",31,"共産党を弾圧したナチ政権では、全権委任法により法律制定に大統領の署名が必須となった。",false,"同法は政府が国会議決や大統領署名を経ずに法律を制定できるようにした。"],
+["2-57",31,"第一次大戦中に本格使用された無線技術は、戦後のエッフェル塔からの放送にもつながった。",true,"無線通信の実用化と戦時利用を経て、戦後のラジオ放送へと用途が広がった。"],
+["2-58",24,"冷湿による足の組織の損傷に加え、降雨による銃の使用困難も塹壕戦の問題だった。",true,"塹壕足と泥による装備への影響は同じ環境で起こりうる。"],
+["2-59",26,"原資料に挙がる三つの解体帝国のうち、ロシア帝国に代わって入るのはイギリス帝国である。",false,"挙げられたのはロシア、オーストリア＝ハンガリー、オスマンの各帝国。"],
+["2-60",29,"「平常への復帰」を掲げて当選した大統領が、パリ講和会議で十四か条を提唱した。",false,"当選したのはハーディング。十四か条は前任のウィルソンが講和会議に先立って提唱した。"],
+["2-61",25,"「電化なくして、共産主義なし」の言葉は、ゴエルロ計画の政治的な意味と結び付く。",true,"電化が社会主義国家の建設と結び付けられた。"],
+["2-62",30,"第一次五か年計画では、農場の集団化と、当局による生産目標の割り当てが並行した。",true,"農業集団化と計画経済が進み、重工業化も柱だった。"],
+["2-63",31,"T4作戦の主な標的はユダヤ人商店の経営者であり、障害者は「水晶の夜」の主な標的だった。",false,"T4作戦は障害者を組織的に殺害した。「水晶の夜」はユダヤ人を標的にした暴力事件。"],
+["2-64",30,"原資料はルイセンコ学説に、生産不振の責任を国民の努力に帰する政治的役割があった可能性を挙げる。",true,"政府が用意した環境で生産が伸びない理由を、努力不足などに転嫁できたとする。"],
+["2-65",25,"イリイチのランプは、家庭に明かりをもたらす技術とレーニンの人物像を結び付けた。",true,"呼び名を通じて国家建設の成果を指導者に結び付けた。"],
+["2-66",29,"大正デモクラシー期に、美濃部達吉は民本主義を、吉野作造は天皇機関説を唱えた。",false,"美濃部が天皇機関説、吉野が民本主義。"],
+["2-67",27,"ローザンヌ条約は、オスマン帝国の敗戦後にケマルが率いた祖国解放運動の流れに位置する。",true,"スルタン制廃止を経て、条約締結とトルコ共和国成立に至った。"],
+["2-68",31,"安価に普及した国民ラジオは、地域ごとに異なる情報を届け、全国での情報共有を弱める目的で使われた。",false,"同じ情報や政治家の声を全国へ送る宣伝に使われた。"],
+["2-69",26,"ジェリーフィッシュレイクは、かつて日本がドイツから占領した山東省にある。",false,"パラオの旧日本委任統治地域にある。"],
+["2-70",29,"フォーディズムでは、流れ作業と部品規格の統一が、同じ車の大量生産に貢献した。",true,"ベルトコンベアと規格化は補完関係にあった。"],
+["2-71",30,"ニューディールで産業全体の復興を図ったのは農業調整法で、農業部門の対策は全国産業復興法に含まれた。",false,"両法律の対象が逆。"],
+["2-72",31,"ナチスの国民共同体は、排除の対象となった人々に平等な参加を保障する理念だった。",false,"特定の人々の排除と、排除されない側の一体感の強調が表裏一体だった。"],
+["2-73",24,"原資料の約2,000万人は、第一次世界大戦で動員された兵士の総数を指す。",false,"原資料が示したのは死者の概数。"],
+["2-74",26,"四カ国条約が中国の門戸開放を、九カ国条約が太平洋の島嶼の権利尊重を定めた。",false,"四カ国条約が太平洋、九カ国条約が中国。"],
+["2-75",25,"ブレスト＝リトフスク条約の相手は、ロシアと同じ連合国側で参戦したイギリスだった。",false,"革命後のロシアはドイツなどと単独講和した。"],
+["2-76",27,"シオニズムはユダヤ人の民族的郷土をめぐる運動であり、1948年のイスラエル建国の背景となった。",true,"パレスチナに郷土を求める運動だった。"],
+["2-77",24,"サラエボ事件で暗殺されたのは、セルビアの王位継承者だった。",false,"オーストリア＝ハンガリーの帝位継承者だった。"],
+["2-78",25,"ソ連の電化は中央と地方の連絡を弱め、地方分権を進める目的で行われた。",false,"中央と地方を結び、中央集権化を進める役割を担った。"],
+["2-79",27,"塩の行進が抗議した直接の対象は、ローラット法による令状なしの拘禁だった。",false,"塩の行進の直接の対象はイギリスの塩の独占。ローラット法は別の争点。"],
+["2-80",26,"十四か条を提唱したのは、対独賠償を重視したフランスの首脳だった。",false,"提唱者は米国のウィルソン。"],
+["2-81",27,"ケマルの文字改革ではラテン文字が廃され、女性参政権も縮小された。",false,"ラテン文字を採用し、女性参政権を認めた。"],
+["2-82",24,"原資料が触れる研究中の事故は、戦場で直接戦った兵士だけに起きた。",false,"研究者の間でも事故が相次いだとされる。"],
+["2-83",24,"オストワルト法で得たアンモニアは、ハーバー＝ボッシュ法の硝酸製造に利用された。",false,"方法と生成物が逆。アンモニアをつくるのがハーバー＝ボッシュ法、硝酸をつくるのがオストワルト法。"],
+["2-84",29,"テイラーの科学的管理法では、作業を細かい動作に分けて所要時間を測定した。",true,"測定結果に基づいて標準的な作業量を設定した。"],
+["2-85",26,"受任国による委任統治は、住民の福祉や発展の支援を掲げた。",true,"旧オスマン領の一部には将来の独立を想定した制度も適用された。"],
+["2-86",24,"米国参戦のきっかけとなったドイツの海上作戦再開は、ロシアの単独講和より早かった。",true,"作戦再開と米参戦は1917年、ロシアの単独講和は1918年。"],
+["2-87",24,"マスタード・ガスとイベリットは同じ化学剤を指し、原資料では連合軍に被害が出た例が挙げられている。",true,"いずれもジクロロジエチルスルフィドの別名。"],
+["2-88",31,"ツォルフェラインで強制労働をさせられた人々には、外国人捕虜と民間人が含まれた。",true,"原資料ではナチス期に数千人が従事させられたとする。"],
+["2-89",24,"大戦景気で伸びた海運・造船・鉄鋼は、軍需の注文や対アジア貿易の拡大とは無関係だった。",false,"軍需と対アジア貿易が大戦景気を支えた。"],
+["2-90",24,"原資料の約100万人は、負傷者を除いた毒ガスによる死者だけの数である。",false,"死者と負傷者を合わせた概数。"],
+["2-91",24,"西部戦線で塹壕戦が長引いたのは、一方の陣営だけが防御陣地を築いたためだった。",false,"両陣営が塹壕にこもり、互いに突破が難しくなった。"],
+["2-92",31,"「ハイル・ヒトラー」はナチ党の紋章の名称で、ハーケンクロイツはその敬礼に伴う挨拶だった。",false,"紋章はハーケンクロイツ。敬礼に伴う挨拶はハイル・ヒトラー。"],
+["2-93",26,"ルール工業地帯を占領した国には、フランスだけでなくベルギーも含まれた。",true,"賠償不履行を理由に両国が1923年に占領した。"],
+["2-94",28,"「連ソ」は共産党員の受け入れ、「容共」はソ連との提携を指す。",false,"連ソと容共の意味が逆。"],
+["2-95",26,"不戦条約は対独賠償の返済方式を国際的に定めた条約である。",false,"不戦条約は国策の手段としての戦争の放棄を定めた。"]]
+</script>
+<script>
+"use strict";
+const element = id => document.getElementById(id);
+const questions = JSON.parse(element("question-bank").textContent)
+  .map(([id, chapter, text, answer, explanation]) => ({ id, chapter, text, answer, explanation }));
+const byId = new Map(questions.map(question => [question.id, question]));
+const modes = ["random", "review"];
+const storageKey = "history-true-false:v1";
+const roundSize = 20;
+const card = element("card");
+let gesture = null;
+
+function validRound(round) {
+  return round && Array.isArray(round.ids) && round.ids.length === roundSize &&
+    new Set(round.ids).size === roundSize && round.ids.every(id => byId.has(id)) &&
+    Number.isInteger(round.index) && round.index >= 0 && round.index <= roundSize &&
+    Array.isArray(round.answers) && round.answers.every(answer => typeof answer === "boolean") &&
+    (round.answers.length === round.index || (round.index < roundSize && round.answers.length === round.index + 1));
+}
+function readState() {
+  const state = { mode: "random", history: {}, rounds: {} };
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey));
+    if (!saved) return state;
+    if (modes.includes(saved.mode)) state.mode = saved.mode;
+    for (const [id, entry] of Object.entries(saved.history ?? {})) {
+      if (byId.has(id) && entry && typeof entry.last === "boolean" &&
+          Number.isInteger(entry.misses) && entry.misses >= 0) state.history[id] = entry;
+    }
+    for (const mode of modes) {
+      if (validRound(saved.rounds?.[mode])) state.rounds[mode] = saved.rounds[mode];
+    }
+  } catch {
+    // A malformed record can be replaced with a fresh one.
+  }
+  return state;
+}
+const state = readState();
+
+function save() {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  } catch {
+    element("storage-note").hidden = false;
+  }
+}
+function shuffled(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+function priority({ id }) {
+  const entry = state.history[id];
+  if (entry?.last === false) return 0;
+  if (entry?.misses > 0) return 1;
+  if (!entry) return 2;
+  return 3;
+}
+function createRound(mode) {
+  const list = shuffled(questions);
+  if (mode === "review") list.sort((a, b) => priority(a) - priority(b));
+  return { ids: list.slice(0, roundSize).map(item => item.id), index: 0, answers: [] };
+}
+function round() {
+  return state.rounds[state.mode];
+}
+function correctCount(current) {
+  return current.answers.reduce((count, chosen, index) =>
+    count + Number(byId.get(current.ids[index]).answer === chosen), 0);
+}
+function resetGesture() {
+  gesture = null;
+  card.classList.remove("dragging");
+  card.style.transform = "";
+  delete card.dataset.direction;
+  element("swipe-label").textContent = "";
+}
+function render(focus = false) {
+  resetGesture();
+  const current = round();
+  const finished = current.index === roundSize;
+  const answered = !finished && current.answers.length > current.index;
+  const correct = correctCount(current);
+  const outstanding = Object.values(state.history).filter(entry => !entry.last).length;
+  for (const mode of modes) element(mode + "-mode").setAttribute("aria-pressed", String(mode === state.mode));
+  element("mode-note").textContent = state.mode === "random"
+    ? "全199問から、1回につき20問を重複なしで出題。"
+    : outstanding
+      ? "直近で間違えた問題を優先します（現在 " + outstanding + " 問）。"
+      : "直近の誤答がないときは、以前の誤答や未回答を優先します。";
+  element("position").textContent = finished ? "20問完了" : (current.index + 1) + " / " + roundSize + " 問";
+  element("score").textContent = "今回の正解 " + correct + " 問";
+  element("progress").value = current.answers.length;
+  element("stage").hidden = finished;
+  element("answer-controls").hidden = finished || answered;
+  element("result").hidden = !answered;
+  element("summary").hidden = !finished;
+  card.classList.toggle("answered", answered);
+  if (finished) {
+    element("summary-text").textContent = roundSize + "問中 " + correct + "問正解（" + Math.round(correct / roundSize * 100) + "%）。誤答 " + (roundSize - correct) + "問。";
+    if (focus) element("summary-title").focus({ preventScroll: true });
+    return;
+  }
+  const question = byId.get(current.ids[current.index]);
+  const [set, number] = question.id.split("-");
+  element("chapter").textContent = "第" + question.chapter + "章";
+  element("origin").textContent = "第" + set + "セット · 問" + number;
+  element("question").textContent = question.text;
+  if (answered) {
+    const chosen = current.answers[current.index];
+    const matched = chosen === question.answer;
+    element("feedback").dataset.correct = String(matched);
+    element("result-title").textContent = matched ? "正解" : "不正解";
+    element("result-answer").textContent = (question.answer ? "正解は ○" : "正解は ×") + "　あなたの回答は " + (chosen ? "○" : "×");
+    element("explanation").textContent = question.explanation;
+    element("next").textContent = current.index === roundSize - 1 ? "結果を見る" : "次の問題";
+    if (focus) element("result-title").focus({ preventScroll: true });
+  } else if (focus) {
+    element("question").focus({ preventScroll: true });
+  }
+}
+function canAnswer() {
+  const current = round();
+  return current.index < roundSize && current.answers.length === current.index;
+}
+function answer(choice) {
+  if (!canAnswer()) return;
+  const current = round();
+  const question = byId.get(current.ids[current.index]);
+  const correct = choice === question.answer;
+  current.answers.push(choice);
+  state.history[question.id] = {
+    last: correct,
+    misses: (state.history[question.id]?.misses ?? 0) + Number(!correct),
+  };
+  save();
+  render(true);
+}
+function next() {
+  const current = round();
+  if (current.index >= roundSize || current.answers.length !== current.index + 1) return;
+  current.index++;
+  save();
+  render(true);
+}
+function selectMode(mode) {
+  if (mode === state.mode) return;
+  state.mode = mode;
+  state.rounds[mode] ??= createRound(mode);
+  save();
+  render();
+}
+state.rounds[state.mode] ??= createRound(state.mode);
+save();
+render();
+for (const mode of modes) element(mode + "-mode").addEventListener("click", () => selectMode(mode));
+element("answer-false").addEventListener("click", () => answer(false));
+element("answer-true").addEventListener("click", () => answer(true));
+element("next").addEventListener("click", next);
+element("restart").addEventListener("click", () => {
+  state.rounds[state.mode] = createRound(state.mode);
+  save();
+  render(true);
+});
+card.addEventListener("pointerdown", event => {
+  if (!canAnswer() || !event.isPrimary || event.button !== 0) return;
+  gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, horizontal: false };
+  card.setPointerCapture(event.pointerId);
+});
+card.addEventListener("pointermove", event => {
+  if (gesture?.id !== event.pointerId) return;
+  const dx = event.clientX - gesture.x;
+  const dy = event.clientY - gesture.y;
+  if (!gesture.horizontal && Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+    resetGesture();
+    return;
+  }
+  if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) gesture.horizontal = true;
+  if (!gesture.horizontal) return;
+  const travel = Math.max(-100, Math.min(100, dx * .62));
+  card.classList.add("dragging");
+  card.dataset.direction = dx > 0 ? "right" : "left";
+  card.style.transform = "translateX(" + travel + "px)";
+  element("swipe-label").textContent = dx > 0 ? "○ 正しい" : "× 誤り";
+});
+card.addEventListener("pointerup", event => {
+  if (gesture?.id !== event.pointerId) return;
+  const dx = event.clientX - gesture.x;
+  const dy = event.clientY - gesture.y;
+  const threshold = Math.min(92, Math.max(48, card.clientWidth * .19));
+  resetGesture();
+  if (Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy) * 1.3) answer(dx > 0);
+});
+card.addEventListener("pointercancel", resetGesture);
+card.addEventListener("lostpointercapture", resetGesture);
+document.addEventListener("keydown", event => {
+  if (!canAnswer() || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  event.preventDefault();
+  answer(event.key === "ArrowRight");
+});
+</script>
+</body>
+</html>
